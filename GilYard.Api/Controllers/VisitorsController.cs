@@ -1,3 +1,4 @@
+using System.Net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,7 @@ using GilYard.Api.Models;
 using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace GilYard.Api.Controllers
 {
@@ -21,15 +23,16 @@ namespace GilYard.Api.Controllers
         }
 
 
+        [Authorize]
         [HttpGet]
         public IActionResult GetAll()
         {
             try
             {
-                var visitorsFromRepo = _context.Visitors.Where(v => v.LeaveDate == null).ToList();
+                var visitorsFromDB = _context.Visitors.Where(v => v.LeaveDate == null).ToList();
                 
                 TypeAdapterConfig<Visitor, VisitorForTable>.NewConfig().Map(dest => dest.UserName, src => src.Guardian.Name);
-                var visitors = visitorsFromRepo.Adapt<List<VisitorForTable>>();
+                var visitors = visitorsFromDB.Adapt<List<VisitorForTable>>();
 
                 return Ok(visitors);
             }
@@ -40,6 +43,7 @@ namespace GilYard.Api.Controllers
         }
 
 
+        [Authorize]
         [HttpPost]
         public IActionResult Add([FromBody] VisitorAdd request)
         {
@@ -58,18 +62,19 @@ namespace GilYard.Api.Controllers
         }
 
 
+        [Authorize]
         [HttpPut("{id}")]
         public IActionResult Update(int id, [FromBody] VisitorAdd request)
         {
             try
             {
-                var visitorsFromRepo = _context.Visitors.Find(id);
-                if(visitorsFromRepo == null) return NotFound("Nie można odnaleźć gościa.");
+                var visitorsFromDB = _context.Visitors.Find(id);
+                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
 
-                if(!string.IsNullOrEmpty(request.Name)) visitorsFromRepo.Name = request.Name;
-                if(!string.IsNullOrEmpty(request.Phone)) visitorsFromRepo.Phone = request.Phone;
-                if(!string.IsNullOrEmpty(request.CarPlate)) visitorsFromRepo.CarPlate = request.CarPlate;
-                if(visitorsFromRepo.GuardianId != request.GuardianId) visitorsFromRepo.GuardianId = request.GuardianId;
+                if(!string.IsNullOrEmpty(request.Name)) visitorsFromDB.Name = request.Name;
+                if(!string.IsNullOrEmpty(request.Phone)) visitorsFromDB.Phone = request.Phone;
+                if(!string.IsNullOrEmpty(request.CarPlate)) visitorsFromDB.CarPlate = request.CarPlate;
+                if(visitorsFromDB.GuardianId != request.GuardianId) visitorsFromDB.GuardianId = request.GuardianId;
 
                 _context.SaveChanges();
 
@@ -82,15 +87,16 @@ namespace GilYard.Api.Controllers
         }
 
 
+        [Authorize]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
             try
             {
-                var visitorsFromRepo = _context.Visitors.Find(id);
-                if(visitorsFromRepo == null) return NotFound("Nie można odnaleźć gościa.");
+                var visitorsFromDB = _context.Visitors.Find(id);
+                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
 
-                _context.Visitors.Remove(visitorsFromRepo);
+                _context.Visitors.Remove(visitorsFromDB);
                 _context.SaveChanges();
 
                 return Ok();
@@ -102,15 +108,16 @@ namespace GilYard.Api.Controllers
         }
         
 
+        [Authorize]
         [HttpPut("comein/{id}")]
         public IActionResult ComeIn(int id)
         {
             try
             {
-                var visitorsFromRepo = _context.Visitors.Find(id);
-                if(visitorsFromRepo == null) return NotFound("Nie można odnaleźć gościa.");
+                var visitorsFromDB = _context.Visitors.Find(id);
+                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
 
-                visitorsFromRepo.ArriveDate = DateTime.Now;
+                visitorsFromDB.ArriveDate = DateTime.Now;
 
                 _context.SaveChanges();
 
@@ -123,16 +130,17 @@ namespace GilYard.Api.Controllers
         }
 
 
+        [Authorize]
         [HttpPut("comeout/{id}")]
         public IActionResult ComeOut(int id)
         {
             try
             {
-                var visitorsFromRepo = _context.Visitors.Find(id);
-                if(visitorsFromRepo == null) return NotFound("Nie można odnaleźć gościa.");
-                if(visitorsFromRepo.ArriveDate == null) return BadRequest("Nie mozna wypuścić gości, który nie został jeszcze wpuszczony.");
+                var visitorsFromDB = _context.Visitors.Find(id);
+                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
+                if(visitorsFromDB.ArriveDate == null) return BadRequest("Nie mozna wypuścić gości, który nie został jeszcze wpuszczony.");
 
-                visitorsFromRepo.LeaveDate = DateTime.Now;
+                visitorsFromDB.LeaveDate = DateTime.Now;
 
                 _context.SaveChanges();
 
