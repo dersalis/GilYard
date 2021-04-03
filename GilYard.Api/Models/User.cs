@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace GilYard.Api.Models
@@ -24,14 +26,15 @@ namespace GilYard.Api.Models
         [StringLength(40, ErrorMessage = "Rola nie moze być dłuzsza niz 40 znaków.")]
         public string Role { get; set; }
 
+        [StringLength(20, ErrorMessage = "Telefon nie moze być dłuzszy niz 20 znaków.")]
         public string Phone { get; set; }
-        
+
         public bool CanSendEmail { get; set; }
-        
+
         public bool CanSendSms { get; set; }
-        
+
         public bool IsActive { get; set; }
-        
-        
+
+        public ICollection<Visitor> Visitors { get; set; }
     }
 }
