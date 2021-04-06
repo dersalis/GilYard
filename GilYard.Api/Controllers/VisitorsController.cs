@@ -8,6 +8,7 @@ using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using GilYard.Api.Services;
 
 namespace GilYard.Api.Controllers
 {
@@ -15,11 +16,11 @@ namespace GilYard.Api.Controllers
     [Route("visitors")]
     public class VisitorsController : ControllerBase
     {
-        private readonly GilYardContext _context;
+        private readonly IVisitorsService _visitorsService;
 
-        public VisitorsController(GilYardContext context)
+        public VisitorsController(IVisitorsService visitorsService)
         {
-            _context = context;
+            _visitorsService = visitorsService;
         }
 
 
@@ -29,10 +30,7 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                var visitorsFromDB = _context.Visitors.Where(v => v.LeaveDate == null).ToList();
-                
-                TypeAdapterConfig<Visitor, VisitorForTable>.NewConfig().Map(dest => dest.UserName, src => src.Guardian.Name);
-                var visitors = visitorsFromDB.Adapt<List<VisitorForTable>>();
+                var visitors = _visitorsService.GetAll();
 
                 return Ok(visitors);
             }
@@ -49,9 +47,7 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                var visitor = request.Adapt<Visitor>();
-                _context.Visitors.Add(visitor);
-                _context.SaveChanges();
+                _visitorsService.Add(request);
 
                 return StatusCode(StatusCodes.Status201Created);
             }
@@ -68,17 +64,9 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                var visitorsFromDB = _context.Visitors.Find(id);
-                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
+                var uId = _visitorsService.Update(id, request);
 
-                if(!string.IsNullOrEmpty(request.Name)) visitorsFromDB.Name = request.Name;
-                if(!string.IsNullOrEmpty(request.Phone)) visitorsFromDB.Phone = request.Phone;
-                if(!string.IsNullOrEmpty(request.CarPlate)) visitorsFromDB.CarPlate = request.CarPlate;
-                if(visitorsFromDB.GuardianId != request.GuardianId) visitorsFromDB.GuardianId = request.GuardianId;
-
-                _context.SaveChanges();
-
-                return Ok(new { VisitorId = id });
+                return Ok(new { VisitorId = uId });
             }
             catch (System.Exception ex)
             {
@@ -93,11 +81,7 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                var visitorsFromDB = _context.Visitors.Find(id);
-                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
-
-                _context.Visitors.Remove(visitorsFromDB);
-                _context.SaveChanges();
+                _visitorsService.Delete(id);
 
                 return Ok();
             }
@@ -114,14 +98,9 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                var visitorsFromDB = _context.Visitors.Find(id);
-                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
+                var uId = _visitorsService.ComeIn(id);
 
-                visitorsFromDB.ArriveDate = DateTime.Now;
-
-                _context.SaveChanges();
-
-                return Ok(new { VisitorId = id });
+                return Ok(new { VisitorId = uId });
             }
             catch (System.Exception ex)
             {
@@ -136,15 +115,9 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                var visitorsFromDB = _context.Visitors.Find(id);
-                if(visitorsFromDB == null) return NotFound("Nie można odnaleźć gościa.");
-                if(visitorsFromDB.ArriveDate == null) return BadRequest("Nie mozna wypuścić gości, który nie został jeszcze wpuszczony.");
+                var uId = _visitorsService.ComeOut(id);
 
-                visitorsFromDB.LeaveDate = DateTime.Now;
-
-                _context.SaveChanges();
-
-                return Ok(new { VisitorId = id });
+                return Ok(new { VisitorId = uId });
             }
             catch (System.Exception ex)
             {

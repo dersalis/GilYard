@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GilYard.Api.Data;
+using GilYard.Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -35,21 +36,26 @@ namespace GilYard.Api
 
             services.AddDbContext<GilYardContext>(option => option.UseSqlServer(Configuration.GetConnectionString("DefaultConnestion")));
 
-             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                    .AddJwtBearer(options =>
-                    {
-                        options.TokenValidationParameters = new TokenValidationParameters
-                        {
-                            ValidateIssuer = true,
-                            ValidateAudience = true,
-                            ValidateLifetime = true,
-                            ValidateIssuerSigningKey = true,
-                            ValidIssuer = Configuration["Tokens:Issuer"],
-                            ValidAudience = Configuration["Tokens:Issuer"],
-                            IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
-                            ClockSkew = TimeSpan.Zero,
-                        };
-                    });
+            // Serwisy
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IVisitorsService, VisitorsService>();
+
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                   .AddJwtBearer(options =>
+                   {
+                       options.TokenValidationParameters = new TokenValidationParameters
+                       {
+                           ValidateIssuer = true,
+                           ValidateAudience = true,
+                           ValidateLifetime = true,
+                           ValidateIssuerSigningKey = true,
+                           ValidIssuer = Configuration["Tokens:Issuer"],
+                           ValidAudience = Configuration["Tokens:Issuer"],
+                           IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(Configuration["Tokens:Key"])),
+                           ClockSkew = TimeSpan.Zero,
+                       };
+                   });
 
             services.AddSwaggerGen(c =>
             {

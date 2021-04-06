@@ -3,6 +3,7 @@ using GilYard.Api.Data;
 using Microsoft.AspNetCore.Mvc;
 using Mapster;
 using GilYard.Api.Models;
+using GilYard.Api.Services;
 
 namespace GilYard.Api.Controllers
 {
@@ -10,21 +11,25 @@ namespace GilYard.Api.Controllers
     [Route("reports")]
     public class ReportsController : ControllerBase
     {
-        private readonly GilYardContext _context;
+        private readonly IVisitorsService _visitorsService;
 
-        public ReportsController(GilYardContext context)
+        public ReportsController(IVisitorsService visitorsService)
         {
-            _context = context;
+            _visitorsService = visitorsService;
         }
 
 
+        /// <summary>
+        /// Zwraca gości użytkownika
+        /// </summary>
+        /// <param name="userid">Id użytkownika</param>
+        /// <returns>Goście</returns>
         [HttpGet("myvisitors/{userid}")]
         public IActionResult MyVisitors(int userid)
         {
             try
             {
-                var visitorsFromDB = _context.Visitors.Where(v => v.GuardianId == userid).ToList();
-                var visitors = visitorsFromDB.Adapt<ReportMyVisitors>();
+                var visitors = _visitorsService.GetByUserId(userid);
                 return Ok(visitors);
             }
             catch (System.Exception ex)
