@@ -47,81 +47,81 @@ namespace GilYard.Api.Controllers
         {
             try
             {
-                _visitorsService.Add(request);
+                int id = _visitorsService.Add(request);
 
-                return StatusCode(StatusCodes.Status201Created);
+                return StatusCode(201, id); // Created
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 
 
         [Authorize]
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] VisitorAdd request)
+        public IActionResult Update([FromRoute] int id, [FromBody] VisitorAdd request)
         {
             try
             {
                 var uId = _visitorsService.Update(id, request);
 
-                return Ok(new { VisitorId = uId });
+                return StatusCode(200, uId); // Ok
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 
 
         [Authorize]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public IActionResult Delete([FromRoute] int id)
         {
             try
             {
-                _visitorsService.Delete(id);
+                int uId = _visitorsService.Delete(id);
 
-                return Ok();
+                return StatusCode(200, uId); // Ok
             }
             catch (System.Exception ex)
             {
-                 return BadRequest(ex.Message);
+                 return StatusCode(400, ex.Message); // Bad Request
             }
         }
         
 
         [Authorize]
         [HttpPut("comein/{id}")]
-        public IActionResult ComeIn(int id)
+        public IActionResult ComeIn([FromRoute] int id)
         {
             try
             {
                 var uId = _visitorsService.ComeIn(id);
 
-                return Ok(new { VisitorId = uId });
+                return StatusCode(200, uId); // Ok
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 
 
         [Authorize]
         [HttpPut("comeout/{id}")]
-        public IActionResult ComeOut(int id)
+        public IActionResult ComeOut([FromRoute] int id)
         {
             try
             {
                 var uId = _visitorsService.ComeOut(id);
 
-                return Ok(new { VisitorId = uId });
+                return StatusCode(200, uId); // Ok
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
     }

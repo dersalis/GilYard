@@ -43,12 +43,12 @@ namespace GilYard.Api.Controllers
                 // Sprawdz czy uzytkownik istnieje
                 var userFromDB = _user.GetByEmail(request.Email);
                 // Jeśli uzytkownik nie istnieje
-                if (userFromDB == null) return NotFound("Nie można odnaleźć konta z taką nazwą użytkownika.");
+                if (userFromDB == null) return StatusCode(404, "Nie można odnaleźć konta z taką nazwą użytkownika."); // Not Found
 
                 // Sprawdz hasło
                 if (!SecurePasswordHasherHelper.Verify(request.Password, userFromDB.Password))
                 {
-                    return Unauthorized();
+                    return StatusCode(401); // Unauthorized
                 }
 
                 var claims = new[]
@@ -71,7 +71,7 @@ namespace GilYard.Api.Controllers
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
     }

@@ -25,16 +25,16 @@ namespace GilYard.Api.Controllers
         /// <param name="userid">Id użytkownika</param>
         /// <returns>Goście</returns>
         [HttpGet("myvisitors/{userid}")]
-        public IActionResult MyVisitors(int userid)
+        public IActionResult MyVisitors([FromRoute] int userid)
         {
             try
             {
                 var visitors = _visitorsService.GetByUserId(userid);
-                return Ok(visitors);
+                return StatusCode(200, visitors); // OK
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 

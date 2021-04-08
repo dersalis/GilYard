@@ -44,17 +44,17 @@ namespace GilYard.Api.Controllers
                 // Sprawdz czy uzytkownik istnieje w bazie
                 var userFromDB = _user.GetByEmail(request.Email);
                 // Jeśli juz istnieje
-                if (userFromDB != null) return BadRequest($"Uzytkonwnik {request.Email} juz istnieje.");
+                if (userFromDB != null) return StatusCode(400, $"Uzytkonwnik {request.Email} już istnieje."); // Bad Request
 
                 var hashedPassword = SecurePasswordHasherHelper.Hash(request.Password);
                 // Jeśli nie istnieje to utworz
-                _user.Add(request, hashedPassword);
+                int id = _user.Add(request, hashedPassword);
 
-                return StatusCode(StatusCodes.Status201Created);
+                return StatusCode(201, id); // Created
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 
@@ -74,18 +74,19 @@ namespace GilYard.Api.Controllers
                 var userFromDB = _user.GetByEmail(request.Email);
 
                 // Jeśli uzytkownik nie istnieje lub stare hasło jest nie poprawne
-                if (userFromDB == null || !SecurePasswordHasherHelper.Verify(request.OldPassword, userFromDB.Password)) return NotFound("Nie można odnaleźć konta z taką nazwą użytkownika.");
+                if (userFromDB == null || !SecurePasswordHasherHelper.Verify(request.OldPassword, userFromDB.Password)) 
+                    return StatusCode(404, "Nie można odnaleźć konta z taką nazwą użytkownika."); // Not Found
 
                 // Zmień hasło
                 var hashedPassword = SecurePasswordHasherHelper.Hash(request.NewPassword);
 
-                _user.ChangePassword(request.Email, hashedPassword);
+                int id = _user.ChangePassword(request.Email, hashedPassword);
 
-                return StatusCode(StatusCodes.Status201Created);
+                return StatusCode(200, id); // Ok
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 
@@ -93,7 +94,7 @@ namespace GilYard.Api.Controllers
         
         [Authorize(Roles = "Admin")]
         [HttpPatch("changestatus")]
-        public IActionResult ChangeStatus(int id, bool setActive)
+        public IActionResult ChangeStatus([FromQuery] int id, bool setActive)
         {
             try
             {
@@ -101,16 +102,16 @@ namespace GilYard.Api.Controllers
                 var userFromDB = _user.GetById(id);
 
                 // Jeśli uzytkownik nie istnieje lub stare hasło jest nie poprawne
-                if (userFromDB == null) return NotFound("Nie można odnaleźć konta z taką nazwą użytkownika.");
+                if (userFromDB == null) return StatusCode(404, "Nie można odnaleźć konta z taką nazwą użytkownika."); // Not Found
 
                 // Zmień status
-                _user.ChangeStatus(id, setActive);
+                int uId = _user.ChangeStatus(id, setActive);
 
-                return StatusCode(StatusCodes.Status201Created);
+                return StatusCode(200, uId); // Ok
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
 
@@ -123,11 +124,11 @@ namespace GilYard.Api.Controllers
             {
                 var users = _user.GetForList();
 
-                return Ok(users);
+                return StatusCode(200, users); // Ok
             }
             catch (System.Exception ex)
             {
-                return BadRequest(ex.Message);
+                return StatusCode(400, ex.Message); // Bad Request
             }
         }
     }
